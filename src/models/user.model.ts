@@ -2,10 +2,13 @@ import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 import config from 'config'
 
-export interface UserDocument extends mongoose.Document {
+export interface UserInput {
   email: string
   name: string
   password: string
+}
+
+export interface UserDocument extends UserInput, mongoose.Document {
   createdAt: Date
   updatedAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
@@ -29,7 +32,9 @@ userSchema.pre('save', async function (next) {
     return next()
   }
 
-  const salt = await bcrypt.genSalt(config.get<number>('saltWorkFactor'))
+  const salt = await bcrypt.genSalt(
+    parseInt(config.get<string>('saltWorkFactor'))
+  )
 
   const hash = await bcrypt.hashSync(user.password, salt)
 
